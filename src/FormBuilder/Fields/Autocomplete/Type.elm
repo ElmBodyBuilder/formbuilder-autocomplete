@@ -1,5 +1,8 @@
 module FormBuilder.Fields.Autocomplete.Type exposing (..)
 
+{-| Fields attributes specific to this Autocomplete custom field.
+-}
+
 
 type alias AutocompleteAttributes a msg =
     { choices : Maybe (List ( String, List a ))

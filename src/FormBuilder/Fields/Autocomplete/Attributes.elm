@@ -1,10 +1,21 @@
 module FormBuilder.Fields.Autocomplete.Attributes exposing (..)
 
+{-| Autocomplete custom field attributes.
+
+    # Custom attributes
+    @docs defaultFieldAttributes
+
+    # Attributes modifiers
+    @docs selection, selectedElement
+-}
+
 import FormBuilder.FieldBuilder exposing (FormAttributes)
 import FormBuilder.Fields.Autocomplete
 import FormBuilder.Fields.Autocomplete.Type exposing (AutocompleteAttributes)
 
 
+{-| À mettre à jour, puis documenter.
+-}
 defaultFieldAttributes : FormAttributes (AutocompleteAttributes a msg) msg
 defaultFieldAttributes =
     { value = Nothing
@@ -29,6 +40,13 @@ defaultFieldAttributes =
     }
 
 
+{-| Set the selection. It includes following attributes:
+        - choices
+        - choicesView
+        - onSelect
+        - searchQuery
+        - focused
+-}
 selection : Maybe (List ( String, List a )) -> (a -> String) -> (a -> msg) -> String -> Bool -> FormAttributes (AutocompleteAttributes a msg) msg -> FormAttributes (AutocompleteAttributes a msg) msg
 selection choices choiceView onSelect searchQuery focused formAttributes =
     { formAttributes
@@ -40,6 +58,8 @@ selection choices choiceView onSelect searchQuery focused formAttributes =
     }
 
 
+{-| Set the selected element.
+-}
 selectedElement : { b | selectedElement : Maybe Int, elements : List a } -> FormAttributes (AutocompleteAttributes a msg) msg -> FormAttributes (AutocompleteAttributes a msg) msg
 selectedElement autocompleteModel formAttributes =
     { formAttributes | selectedElement = FormBuilder.Fields.Autocomplete.selectedElement autocompleteModel }

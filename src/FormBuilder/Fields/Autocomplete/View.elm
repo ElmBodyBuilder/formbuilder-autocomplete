@@ -1,5 +1,11 @@
 module FormBuilder.Fields.Autocomplete.View exposing (..)
 
+{-| Defines all the view functions relative to Autocomplete custom field for
+    elm-bodybuilder FormBuilder.
+
+    @docs defaultFields, inputField
+-}
+
 import Html exposing (Html)
 import Html.Attributes
 import Html.Events
@@ -8,6 +14,8 @@ import FormBuilder.Fields.Autocomplete.Type exposing (AutocompleteAttributes)
 import FormBuilder.Fields.Autocomplete.Attributes exposing (..)
 
 
+{-| A documenter après mise à jour.
+-}
 defaultField : String -> Maybe (FieldView (AutocompleteAttributes a msg) msg) -> String -> List (AttributesModifier (AutocompleteAttributes a msg) msg) -> Html msg
 defaultField recordName view =
     FieldBuilder.objectField recordName defaultFieldAttributes view
@@ -29,7 +37,7 @@ elementView viewFun onSelect selected choices =
                 (List.append
                     [ ( "cursor", "pointer" )
                     , ( "padding", "3px" )
-                    , ( "display", "block" )
+                    , ( "", "block" )
                     , ( "width", "100%" )
                     , ( "padding-left", "12px" )
                     ]
@@ -47,6 +55,8 @@ elementView viewFun onSelect selected choices =
             [ Html.text (description) ]
 
 
+{-| A documenter après mise à jour.
+-}
 inputField : FieldView (AutocompleteAttributes a msg) msg
 inputField attributes commonAttrs name val =
     case attributes.choiceView of
