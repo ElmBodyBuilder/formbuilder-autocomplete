@@ -1,43 +1,43 @@
-module FormBuilder.Fields.Autocomplete.View exposing (..)
+module FormBuilder.Autocomplete exposing (default)
 
-{-| Defines all the view functions relative to Autocomplete custom field for
-    elm-bodybuilder FormBuilder.
+{-| View of the autocomplete field, used to render it in the browser.
 
-    @docs defaultFields, inputField
+@docs default
 -}
 
 import Html exposing (Html)
 import Html.Attributes
 import Html.Events
-import FormBuilder.FieldBuilder as FieldBuilder exposing (FormAttributes, FieldView, AttributesModifier)
-import FormBuilder.Fields.Autocomplete.Type exposing (AutocompleteAttributes)
-import FormBuilder.Fields.Autocomplete.Attributes exposing (..)
+import FormBuilder.FieldBuilder.Attributes as Attributes exposing (FieldAttributes, AttributesModifier)
+import FormBuilder.FieldBuilder.Events as Events
+import FormBuilder.FieldBuilder as FieldBuilder exposing (FieldView)
+import FormBuilder.Autocomplete.Attributes as Attributes exposing (AutocompleteAttributes, defaultAttributes)
 
 
-{-| A documenter après mise à jour.
+{-| Default field of the autocomplete.
 -}
-defaultField : String -> Maybe (FieldView (AutocompleteAttributes a msg) msg) -> String -> List (AttributesModifier (AutocompleteAttributes a msg) msg) -> Html msg
-defaultField recordName view =
-    FieldBuilder.objectField recordName defaultFieldAttributes view
+default : List (AttributesModifier (AutocompleteAttributes a msg) msg) -> Html msg
+default =
+    FieldBuilder.object defaultAttributes (Just inputField)
 
 
 choicesView : List a -> (a -> String) -> (a -> msg) -> Maybe a -> List (Html msg)
-choicesView choices viewFun onSelect selected =
-    choices |> List.map (elementView viewFun onSelect selected)
+choicesView choices choiceView onSelect selected =
+    choices |> List.map (elementView choiceView onSelect selected)
 
 
 elementView : (a -> String) -> (a -> msg) -> Maybe a -> a -> Html msg
-elementView viewFun onSelect selected choices =
+elementView choiceView onSelect selected choices =
     let
         description =
-            viewFun choices
+            choiceView choices
     in
         Html.a
             [ Html.Attributes.style
                 (List.append
                     [ ( "cursor", "pointer" )
                     , ( "padding", "3px" )
-                    , ( "", "block" )
+                    , ( "display", "block" )
                     , ( "width", "100%" )
                     , ( "padding-left", "12px" )
                     ]
@@ -55,10 +55,8 @@ elementView viewFun onSelect selected choices =
             [ Html.text (description) ]
 
 
-{-| A documenter après mise à jour.
--}
 inputField : FieldView (AutocompleteAttributes a msg) msg
-inputField attributes commonAttrs name val =
+inputField attributes =
     case attributes.choiceView of
         Nothing ->
             Html.text ""
@@ -86,14 +84,19 @@ inputField attributes commonAttrs name val =
                                 click
                                 text
                                 attributes
-                                commonAttrs
 
 
-display : List ( String, List a ) -> (a -> String) -> (a -> msg) -> String -> FormAttributes (AutocompleteAttributes a msg) msg -> List (Html.Attribute msg) -> Html msg
-display choices choiceView onSelect searchQuery attributes commonAttrs =
-    case attributes.event of
+display :
+    List ( String, List a )
+    -> (a -> String)
+    -> (a -> msg)
+    -> String
+    -> FieldAttributes (AutocompleteAttributes a msg) msg
+    -> Html msg
+display choices choiceView onSelect searchQuery attributes =
+    case attributes.common.onInput of
         Just event ->
-            case attributes.placeholder of
+            case attributes.common.placeholder of
                 Nothing ->
                     Html.text ""
 
@@ -103,15 +106,16 @@ display choices choiceView onSelect searchQuery attributes commonAttrs =
                             [ ( "position", "relative" )
                             ]
                         ]
-                        [ FieldBuilder.inputField FieldBuilder.Text
-                            (List.append
-                                [ Html.Attributes.placeholder placeholder
-                                , Html.Events.onInput event
-                                , Html.Attributes.autocomplete False
-                                ]
-                                commonAttrs
-                            )
-                            searchQuery
+                        [ FieldBuilder.object
+                            attributes
+                            Nothing
+                            [ Attributes.type_ Attributes.Text
+                            , Attributes.placeholder placeholder
+                            , Attributes.autocomplete False
+                            , Attributes.searchQuery searchQuery
+                            , Attributes.value searchQuery
+                            , Events.onInput event
+                            ]
                         , if (searchQuery |> String.length) < 5 || not attributes.focused then
                             Html.text ""
                           else
@@ -126,6 +130,7 @@ display choices choiceView onSelect searchQuery attributes commonAttrs =
                                     , ( "margin-top", "-2px" )
                                     , ( "width", "100%" )
                                     , ( "background-color", "#ffffff" )
+                                    , ( "z-index", "10" )
                                     ]
                                 ]
                                 (choices |> List.map (placeLabel choiceView onSelect attributes.selectedElement))
@@ -136,7 +141,7 @@ display choices choiceView onSelect searchQuery attributes commonAttrs =
 
 
 placeLabel : (a -> String) -> (a -> msg) -> Maybe a -> ( String, List a ) -> Html msg
-placeLabel viewFun onSelect selected choices =
+placeLabel choiceView onSelect selected choices =
     Html.div []
         (if (List.length (Tuple.second choices)) == 0 then
             []
@@ -157,6 +162,6 @@ placeLabel viewFun onSelect selected choices =
                     ]
                     [ Html.text (Tuple.first choices) ]
                 ]
-                (choicesView (Tuple.second choices) viewFun onSelect selected)
+                (choicesView (Tuple.second choices) choiceView onSelect selected)
             )
         )

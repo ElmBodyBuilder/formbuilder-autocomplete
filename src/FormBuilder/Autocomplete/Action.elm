@@ -1,19 +1,24 @@
-module FormBuilder.Fields.Autocomplete exposing (..)
+module FormBuilder.Autocomplete.Action
+    exposing
+        ( changeSelectedElement
+        , selectElement
+        , deselectElement
+        , selectedElement
+        )
 
-{-| Getters and setter to navigate through the Autocomplation list.
+{-| Create a new autocomplete form field.
 
-    # Getter
-    @docs selectedElement
-
-    # Setters
-    @docs changeSelectedElement, selectElement, deselectElement
+# Model Modifier
+@docs changeSelectedElement
+@docs selectElement
+@docs deselectElement
+@docs selectedElement
 -}
 
 import List.Extra
 
 
-{-| Used to move up or down in the autocompletion list.
-    Offset shoulde be '-1' to move up or '1' to move down.
+{-| Changes the selected element in the autocomplete.
 -}
 changeSelectedElement : { b | selectedElement : Maybe Int, elements : List a } -> Int -> { b | selectedElement : Maybe Int, elements : List a }
 changeSelectedElement autocompleteModel offset =
@@ -45,27 +50,34 @@ changeSelectedElement autocompleteModel offset =
         }
 
 
-{-| Selects a specific element within the autocompletion list.
+{-| Selects an element in the elements, and puts it as selectedElement in autocomplete.
 -}
-selectElement : a -> { b | selectedElement : Maybe Int, elements : List a } -> { b | selectedElement : Maybe Int, elements : List a }
+selectElement :
+    a
+    -> { b | selectedElement : Maybe Int, elements : List a }
+    -> { b | selectedElement : Maybe Int, elements : List a }
 selectElement element autocompleteModel =
     { autocompleteModel | selectedElement = List.Extra.elemIndex element autocompleteModel.elements }
 
 
-{-| Returns the selected element in the list.
+{-| Removes the selected element from the autocomplete.
 -}
-selectedElement : { b | selectedElement : Maybe Int, elements : List a } -> Maybe a
-selectedElement autocompleteModel =
-    case autocompleteModel.selectedElement of
+deselectElement :
+    { b | selectedElement : Maybe Int }
+    -> { b | selectedElement : Maybe Int }
+deselectElement autocompleteModel =
+    { autocompleteModel | selectedElement = Nothing }
+
+
+{-| Returns the selected element from the autocomplete model.
+-}
+selectedElement :
+    { b | elements : List a, selectedElement : Maybe Int }
+    -> Maybe a
+selectedElement { selectedElement, elements } =
+    case selectedElement of
         Nothing ->
             Nothing
 
         Just index ->
-            autocompleteModel.elements |> List.Extra.getAt index
-
-
-{-| Unselects the selected element. No more selected element.
--}
-deselectElement : { b | selectedElement : Maybe Int } -> { b | selectedElement : Maybe Int }
-deselectElement autocompleteModel =
-    { autocompleteModel | selectedElement = Nothing }
+            elements |> List.Extra.getAt index
