@@ -522,23 +522,22 @@ dropdownView labels hoverStyle ((State { searchQuery, wrapperMsg, selectMsg, ele
 subscriptions :
     State element msg
     -> Float
-    -> (Msg (List element) -> msg)
     -> Sub msg
-subscriptions (State { globalTime, lastKeyboardActivity, focused, elements, timeBeforeBlur }) delay message =
+subscriptions (State { globalTime, lastKeyboardActivity, focused, elements, timeBeforeBlur, wrapperMsg }) delay =
     Sub.batch
         [ if timeBeforeBlur > 0 then
-            Time.every (timeBeforeBlur * Time.millisecond) (message << BlurAutocomplete)
+            Time.every (timeBeforeBlur * Time.millisecond) (wrapperMsg << BlurAutocomplete)
           else
             Sub.none
         , if List.length elements == 0 && isElapsedDelay globalTime lastKeyboardActivity delay then
-            Time.every (delay * Time.millisecond) (message << UpdateGlobalTimeAndFetchRequests delay)
+            Time.every (delay * Time.millisecond) (wrapperMsg << UpdateGlobalTimeAndFetchRequests delay)
           else
             Sub.none
         , if focused then
             Sub.batch
-                [ Keyboard.presses (message << HandleKeyboardPress)
-                , Keyboard.ups (message << HandleKeyboardUp)
-                , Keyboard.downs (message << HandleKeyboardDown)
+                [ Keyboard.presses (wrapperMsg << HandleKeyboardPress)
+                , Keyboard.ups (wrapperMsg << HandleKeyboardUp)
+                , Keyboard.downs (wrapperMsg << HandleKeyboardDown)
                 ]
           else
             Sub.none
