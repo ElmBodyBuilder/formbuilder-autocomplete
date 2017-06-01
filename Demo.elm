@@ -1,6 +1,7 @@
 module Demo exposing (..)
 
 import Html exposing (Html)
+import Elegant exposing (..)
 import Json.Decode as Decode exposing (Decoder)
 import FormBuilder.FieldBuilder.Autocomplete as Autocomplete
 
@@ -23,7 +24,9 @@ type alias Quotes =
 
 
 type alias Model =
-    { autocompleteState : Autocomplete.State Quote Msg }
+    { autocompleteState : Autocomplete.State Quote Msg
+    , quote : Maybe Quote
+    }
 
 
 decodeQuotes : Decoder Quotes
@@ -53,6 +56,7 @@ init =
             Autocomplete
             SelectElement
             [ Autocomplete.get "https://api.chucknorris.io/jokes/search?query=" decodeQuotes ]
+    , quote = Nothing
     }
         ! []
 
@@ -68,12 +72,12 @@ update msg ({ autocompleteState } as model) =
                 (state |> asAutocompleteState model) ! [ cmds ]
 
         SelectElement quote ->
-            model ! []
+            { model | quote = Just quote } ! []
 
 
 subscriptions : Model -> Sub Msg
 subscriptions { autocompleteState } =
-    Sub.batch [ Autocomplete.subscriptions autocompleteState 250 Autocomplete ]
+    Sub.batch [ Autocomplete.subscriptions autocompleteState 250 ]
 
 
 cellView : Quote -> Html Msg
@@ -82,12 +86,27 @@ cellView { value } =
 
 
 view : Model -> Html Msg
-view { autocompleteState } =
-    Html.div []
+view { autocompleteState, quote } =
+    Html.div
+        [ style
+            [ maxWidth (Percent 100)
+            , width (Px 700)
+            , marginAuto
+            , padding medium
+            , textCenter
+            ]
+        ]
         [ Autocomplete.input
             autocompleteState
             cellView
             []
+        , case quote of
+            Nothing ->
+                Html.text ""
+
+            Just { value } ->
+                Html.div []
+                    [ Html.text value ]
         ]
 
 
