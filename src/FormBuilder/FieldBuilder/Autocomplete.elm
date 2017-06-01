@@ -336,7 +336,7 @@ addElementInCache searchQuery elements (State ({ fetchedElements, maxResults } a
                 State { state | fetchedElements = updateElements elements_ }
 
             Just fetchedElements_ ->
-                if (List.containsAll elements_ fetchedElements_) then
+                if List.containsAll fetchedElements_ elements_ then
                     State state
                 else
                     State { state | fetchedElements = updateElements (List.merge elements_ fetchedElements_) }
