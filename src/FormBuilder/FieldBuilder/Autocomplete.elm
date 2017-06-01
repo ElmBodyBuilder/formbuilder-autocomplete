@@ -163,7 +163,7 @@ update msg (State ({ wrapperMsg, selectMsg, selectedElement, elements, globalTim
 
         UpdateGlobalTimeAndFetchRequests delay time ->
             State { state | globalTime = time }
-                ! [ if isElapsedDelay time lastKeyboardActivity delay then
+                ! [ if isElapsedDelay time lastKeyboardActivity delay || String.isEmpty searchQuery then
                         Cmd.none
                     else
                         fetchRequests requests searchQuery wrapperMsg
@@ -529,7 +529,7 @@ subscriptions (State { globalTime, lastKeyboardActivity, focused, elements, time
             Time.every (timeBeforeBlur * Time.millisecond) (wrapperMsg << BlurAutocomplete)
           else
             Sub.none
-        , if List.length elements == 0 && isElapsedDelay globalTime lastKeyboardActivity delay then
+        , if List.isEmpty elements && isElapsedDelay globalTime lastKeyboardActivity delay then
             Time.every (delay * Time.millisecond) (wrapperMsg << UpdateGlobalTimeAndFetchRequests delay)
           else
             Sub.none
