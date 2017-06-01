@@ -1,5 +1,5 @@
 {
-    "version": "1.0.0",
+    "version": "2.0.0",
     "summary": "Field for FormBuilder: autocomplete field fetching informations on the Internet",
     "repository": "https://github.com/elm-bodybuilder/formbuilder-autocomplete.git",
     "license": "MIT",
