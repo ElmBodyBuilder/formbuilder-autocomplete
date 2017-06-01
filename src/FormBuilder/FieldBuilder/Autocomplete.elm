@@ -51,8 +51,7 @@ import Helpers.List as List
 
 {-| -}
 type alias AutocompleteAttributes element =
-    { delay : Float
-    , labels : Maybe (element -> String)
+    { labels : Maybe (element -> String)
     , hoverStyle : List (Elegant.Style -> Elegant.Style)
     }
 
@@ -60,7 +59,6 @@ type alias AutocompleteAttributes element =
 defaultAttributes : FieldAttributes (AutocompleteAttributes element) msg
 defaultAttributes =
     { common = Attributes.commonAttributes
-    , delay = 250
     , labels = Nothing
     , hoverStyle =
         [ Elegant.backgroundColor (Color.grayscale 0.1)
@@ -430,7 +428,7 @@ elementView hoverStyle (State { selectMsg, selectedElement, wrapperMsg }) elemen
         Html.a
             [ Html.Events.onClick (selectMsg element)
             , Html.Events.onMouseEnter ((wrapperMsg << SelectElement) index)
-            , Elegant.style (Elegant.cursorPointer :: Elegant.displayBlock :: computedHoverStyle)
+            , Elegant.style (paddingHorizontal small :: cursorPointer :: displayBlock :: computedHoverStyle)
             ]
             [ elementCellView element ]
 
@@ -470,6 +468,7 @@ inputView (State { searchQuery, wrapperMsg, selectMsg, elements }) placeholder =
               , Html.Attributes.tabindex 0
               , Html.Events.onFocus (wrapperMsg FocusAutocomplete)
               , Html.Events.onBlur (wrapperMsg DelayBlur)
+              , Elegant.style [ fullWidth, padding tiny ]
               ]
             , case placeholder of
                 Nothing ->

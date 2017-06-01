@@ -89,11 +89,9 @@ view : Model -> Html Msg
 view { autocompleteState, quote } =
     Html.div
         [ style
-            [ maxWidth (Percent 100)
-            , width (Px 700)
+            [ maxWidth (Px 700)
             , marginAuto
             , padding medium
-            , textCenter
             ]
         ]
         [ Autocomplete.input
