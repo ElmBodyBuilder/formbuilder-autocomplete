@@ -4,6 +4,7 @@ import Html exposing (Html)
 import Elegant exposing (..)
 import Json.Decode as Decode exposing (Decoder)
 import FormBuilder.FieldBuilder.Autocomplete as Autocomplete
+import FormBuilder.FieldBuilder.Attributes as FieldBuilderAttributes
 
 
 type Msg
@@ -90,24 +91,27 @@ cellView { value } =
 
 view : Model -> Html Msg
 view { autocompleteState, quote } =
-    Html.div
-        [ style
-            [ maxWidth (Px 700)
-            , marginAuto
-            , padding medium
+    Html.div []
+        [ Html.h1 [ style [ textCenter ] ] [ Html.text "Elm Autocomplete of the Chuck Norris Api" ]
+        , Html.div
+            [ style
+                [ maxWidth (Px 700)
+                , marginAuto
+                , padding medium
+                ]
             ]
-        ]
-        [ Autocomplete.input
-            autocompleteState
-            cellView
-            []
-        , case quote of
-            Nothing ->
-                Html.text ""
+            [ Autocomplete.input
+                autocompleteState
+                cellView
+                [ FieldBuilderAttributes.placeholder "Type some Chuck Norris related terms like 'plane' or 'truck'" ]
+            , case quote of
+                Nothing ->
+                    Html.text ""
 
-            Just { value } ->
-                Html.div []
-                    [ Html.text value ]
+                Just { value } ->
+                    Html.div []
+                        [ Html.text value ]
+            ]
         ]
 
 

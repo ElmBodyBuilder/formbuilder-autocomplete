@@ -464,7 +464,7 @@ elementView hoverStyle (State { selectMsg, selectedElement, wrapperMsg }) elemen
         Html.a
             [ Html.Events.onClick (selectMsg element)
             , Html.Events.onMouseEnter ((wrapperMsg << SelectElement) index)
-            , Elegant.style (paddingHorizontal small :: cursorPointer :: displayBlock :: computedHoverStyle)
+            , Elegant.style (paddingHorizontal medium :: paddingVertical small :: cursorPointer :: displayBlock :: computedHoverStyle)
             ]
             [ elementCellView element ]
 
