@@ -52,10 +52,13 @@ asAutocompleteState model autocompleteState =
 init : ( Model, Cmd Msg )
 init =
     { autocompleteState =
-        Autocomplete.autocompleteState
+        (Autocomplete.autocompleteState
             Autocomplete
             SelectElement
             [ Autocomplete.get "https://api.chucknorris.io/jokes/search?query=" decodeQuotes ]
+        )
+            |> Autocomplete.minChars 5
+            |> Autocomplete.maxResults 25
     , quote = Nothing
     }
         ! []

@@ -11,6 +11,8 @@ module FormBuilder.FieldBuilder.Autocomplete
         , withHover
         , State
         , autocompleteState
+        , minChars
+        , maxResults
         )
 
 {-| Creates an autocomplete field, able to search accross the web from multiple sources.
@@ -26,6 +28,8 @@ module FormBuilder.FieldBuilder.Autocomplete
 @docs withHover
 @docs State
 @docs autocompleteState
+@docs minChars
+@docs maxResults
 
 -}
 
@@ -99,6 +103,8 @@ type State element msg
         , selectMsg : element -> msg
         , focused : Bool
         , timeBeforeBlur : Float
+        , minChars : Int
+        , maxResults : Maybe Int
         }
 
 
@@ -121,7 +127,29 @@ autocompleteState wrapperMsg selectMsg requests =
         , selectMsg = selectMsg
         , focused = False
         , timeBeforeBlur = 0
+        , minChars = 1
+        , maxResults = Nothing
         }
+
+
+{-| Set the minimum number of character before launch of requests.
+It can't be less than 1.
+-}
+minChars : Int -> State element msg -> State element msg
+minChars minChars_ ((State state_) as state) =
+    if minChars_ < 1 then
+        state
+    else
+        State { state_ | minChars = minChars_ }
+
+
+{-| -}
+maxResults : Int -> State element msg -> State element msg
+maxResults maxResults_ ((State state_) as state) =
+    if maxResults_ < 1 then
+        state
+    else
+        State { state_ | maxResults = Just maxResults_ }
 
 
 {-| -}
@@ -151,7 +179,7 @@ update :
     Msg (List element)
     -> State element msg
     -> ( State element msg, Cmd msg )
-update msg (State ({ wrapperMsg, selectMsg, selectedElement, elements, globalTime, requests, lastKeyboardActivity, searchQuery } as state)) =
+update msg (State ({ wrapperMsg, selectMsg, selectedElement, elements, globalTime, requests, lastKeyboardActivity, searchQuery, minChars } as state)) =
     case msg of
         UpdateSearchQuery input ->
             (State { state | searchQuery = input }
@@ -161,7 +189,7 @@ update msg (State ({ wrapperMsg, selectMsg, selectedElement, elements, globalTim
 
         UpdateGlobalTimeAndFetchRequests delay time ->
             State { state | globalTime = time }
-                ! [ if isElapsedDelay time lastKeyboardActivity delay then
+                ! [ if isElapsedDelay time lastKeyboardActivity delay || String.length searchQuery < minChars then
                         Cmd.none
                     else
                         fetchRequests requests searchQuery wrapperMsg
@@ -290,20 +318,28 @@ changeSelectedElement ((State { elements, selectedElement }) as state) offset =
 
 
 addElementInCache : String -> List element -> State element msg -> State element msg
-addElementInCache searchQuery elements (State ({ fetchedElements } as state)) =
+addElementInCache searchQuery elements (State ({ fetchedElements, maxResults } as state)) =
     let
+        elements_ =
+            case maxResults of
+                Nothing ->
+                    elements
+
+                Just max ->
+                    List.take max elements
+
         updateElements element =
             Dict.insert searchQuery element fetchedElements
     in
         case Dict.get searchQuery fetchedElements of
             Nothing ->
-                State { state | fetchedElements = updateElements elements }
+                State { state | fetchedElements = updateElements elements_ }
 
             Just fetchedElements_ ->
-                if (List.containsAll elements fetchedElements_) then
+                if (List.containsAll elements_ fetchedElements_) then
                     State state
                 else
-                    State { state | fetchedElements = updateElements (List.merge elements fetchedElements_) }
+                    State { state | fetchedElements = updateElements (List.merge elements_ fetchedElements_) }
 
 
 selectElements : State element msg -> State element msg
@@ -528,7 +564,7 @@ subscriptions (State { globalTime, lastKeyboardActivity, focused, elements, time
             Time.every (timeBeforeBlur * Time.millisecond) (wrapperMsg << BlurAutocomplete)
           else
             Sub.none
-        , if List.length elements == 0 && isElapsedDelay globalTime lastKeyboardActivity delay then
+        , if List.isEmpty elements && isElapsedDelay globalTime lastKeyboardActivity delay then
             Time.every (delay * Time.millisecond) (wrapperMsg << UpdateGlobalTimeAndFetchRequests delay)
           else
             Sub.none
